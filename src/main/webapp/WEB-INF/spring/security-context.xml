@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
+		
+		<security:http auto-config="true">
+			<security:intercept-url pattern="/login"/>
+			<security:form-login
+				login-page="/login"
+				username-parameter="userId"
+				password-parameter="userPw"
+				login-processing-url="/loginProcess"
+				default-target-url="/loginSuccess"
+				authentication-failure-url="/login"
+				always-use-default-target="true"
+			/>
+			
+			<security:session-management>
+				<security:concurrency-control max-sessions="1" expired-url="/loginDuplicate"/>
+			</security:session-management>
+		</security:http>
+		
+		<bean class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler"/>
+		
+		<bean id="LoginService" class="com.MyClassDB.Security.LoginService">
+		</bean>
+		
+		<bean id="CustomAuthenticationProvider" class="com.MyClassDB.Security.CustomAuthenticationProvider"/>
+		
+		<bean id="passwordEncoder" class="org.springframework.security.authentication.encoding.ShaPasswordEncoder">
+			<constructor-arg value="256"/>
+		</bean>
+		
+		<bean id="saltSource" class="org.springframework.security.authentication.dao.ReflectionSaltSource">
+	        <property name="userPropertyToUse" value="username" />
+	    </bean>
+		
+		<security:authentication-manager>
+			<security:authentication-provider ref="CustomAuthenticationProvider"/>
+			<security:authentication-provider user-service-ref="LoginService">
+				<security:password-encoder ref="passwordEncoder">
+					<security:salt-source ref="saltSource"/>
+				</security:password-encoder>
+			</security:authentication-provider>
+		</security:authentication-manager>
+		
+		
+		
+</beans>
